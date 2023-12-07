@@ -1,0 +1,13 @@
+{
+    "mailbox": {
+        "server": "",
+        "port": 143,
+        "login": "email-bot",
+        "password": ""
+    },
+    "destinations": {
+        "rcpt1@example.com": "https://discord.com/api/webhooks/id/token",
+        "rcpt2@example.com": "https://discord.com/api/webhooks/id2/token2"
+    },
+    "default_destination": "https://discord.com/api/webhooks/id3/token3"
+}
