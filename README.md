@@ -21,7 +21,9 @@ Config is stored in a JSON file. See `example-config.json` for a template.
         # imap server port, assumes TLS
         "port": 143,
         "login": "email-bot",
-        "password": ""
+        "password": "",
+        # optional - use starttls for imap connection. false if ommitted
+        "starttls": false
     },
     # posts messages to different webhooks based on email "to" field
     # note that this does not work for emails sent with "bcc"

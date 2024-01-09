@@ -1,7 +1,7 @@
 import logging
 from json import load
 from sys import argv, stdout
-from imap_tools.mailbox import MailBoxTls
+from imap_tools.mailbox import MailBoxTls, MailBox
 from imap_tools.message import MailMessage
 from imap_tools.query import A
 from requests import post
@@ -25,7 +25,7 @@ def send_email_webhook(webhook_url: str, msg: MailMessage):
     })
     return r.status_code == 204
 
-def check_mail_and_send_webhooks(destinations, default_destination):
+def check_mail_and_send_webhooks(mailbox, destinations, default_destination):
     seen_uids = []
     for msg in mailbox.fetch(criteria=A(seen=False), mark_seen=False):
         found = False
@@ -63,8 +63,12 @@ if __name__ == "__main__":
         config = load(config_file)
 
     m = config["mailbox"]
-    with MailBoxTls(m["server"], port=m["port"]).login(m["login"], m["password"]) as mailbox:
+    starttls = False if "starttls" not in config else config["starttls"]
+    MailboxClass = MailBoxTls if starttls else MailBox
+
+    with MailboxClass(m["server"], port=m["port"]).login(m["login"], m["password"]) as mailbox:
         logger.info("logged in")
-        idle(mailbox, lambda: check_mail_and_send_webhooks(config["destinations"], 
+        idle(mailbox, lambda: check_mail_and_send_webhooks(mailbox,
+                                                           config["destinations"],
                                                            config["default_destination"]))
 
