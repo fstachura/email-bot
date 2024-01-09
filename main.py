@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta
 from json import load
 from sys import argv, stdout
 from imap_tools.mailbox import MailBoxTls, MailBox
@@ -27,7 +28,8 @@ def send_email_webhook(webhook_url: str, msg: MailMessage):
 
 def check_mail_and_send_webhooks(mailbox, destinations, default_destination):
     seen_uids = []
-    for msg in mailbox.fetch(criteria=A(seen=False), mark_seen=False):
+    yesterday = datetime.now() - timedelta(days=1)
+    for msg in mailbox.fetch(criteria=A(seen=False, date_gte=yesterday.date()), mark_seen=False):
         found = False
 
         for d in destinations.keys(): 
@@ -41,7 +43,8 @@ def check_mail_and_send_webhooks(mailbox, destinations, default_destination):
 
         if not found:
             logger.info("destination for " + str(msg.to) + " was not found, sending to default")
-            send_email_webhook(default_destination, msg)
+            if send_email_webhook(default_destination, msg):
+                seen_uids.append(msg.uid)
 
     logger.debug("updating seen flags")
     mailbox.flag(seen_uids, "\\Seen", True)
@@ -49,7 +52,7 @@ def check_mail_and_send_webhooks(mailbox, destinations, default_destination):
 def idle(mailbox, callback):
     while True:
         logger.debug("idling")
-        responses = mailbox.idle.wait(timeout=60)
+        responses = mailbox.idle.wait(timeout=60*5)
         if responses:
             logger.debug("idle returned responses")
             callback() 
