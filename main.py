@@ -13,10 +13,10 @@ logging.basicConfig(stream=stdout, level=logging.INFO)
 def format_msg(msg: MailMessage):
     subject = msg.subject if len(msg.subject.strip()) != 0 else "(empty)"
     return f"""
-From: {msg.from_}
-### {subject}
+From: {msg.from_[:80]}
+### {subject[:400]}
 ```
-{msg.text[:1000]}
+{msg.text[:1400]}
 ```
     """
 
@@ -24,6 +24,11 @@ def send_email_webhook(webhook_url: str, msg: MailMessage):
     r = post(webhook_url, json={
         "content": format_msg(msg),
     })
+    if len(r.text) != 0:
+        try:
+            logger.info("subject %s, response from webhook: %s", msg.subject, r.json())
+        except:
+            logger.exception("failed to parse json response from webhook")
     return r.status_code == 204
 
 def check_mail_and_send_webhooks(mailbox, destinations, default_destination):
