@@ -5,7 +5,7 @@ Simple Discord webhook bot that sends messages on new emails
 ## Setup
 
 * `python3 -m venv .venv`
-* `./.venv/bin/activate`
+* `source .venv/bin/activate`
 * `pip3 install -r requirements.txt`
 * `python3 main.py config.json`
 
